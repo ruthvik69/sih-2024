@@ -1,3 +1,4 @@
+import { useResults } from "@/contexts/results";
 import {
 	CameraView,
 	CameraType,
@@ -30,6 +31,8 @@ export default function App() {
 	const [permission, requestPermission] = useCameraPermissions();
 	const [photo, setPhoto] = useState<CameraCapturedPicture | undefined>();
 	const [visible, setVisible] = useState(false);
+
+	const { result, setResult } = useResults();
 
 	if (!permission) {
 		// Camera permissions are still loading.
@@ -66,16 +69,26 @@ export default function App() {
 		}
 
 		try {
-			const res = await fetch("http://localhost:8080/detect-image", {
-				method: "POST",
-				body: JSON.stringify({
-					image: photo.base64,
-				}),
-			});
+			// TODO: Uncomment the following code to enable the detection process
+			// const res = await fetch("http://localhost:8080/detect-image", {
+			// 	method: "POST",
+			// 	body: JSON.stringify({
+			// 		image: photo.base64,
+			// 	}),
+			// });
 
-			const result = await res.json();
-			console.log(result);
-			router.push("/result");
+			// const result = await res.json();
+			// console.log(result);
+
+			setResult &&
+				setResult({
+					label: "Tomato Late Blight",
+					confidence: 98,
+					image: photo,
+					description:
+						"Tomato late blight is a disease caused by the fungus Phytophthora infestans. It is a common disease of tomatoes and potatoes, but can also affect other members of the Solanaceae family. The disease is characterized by the appearance of dark, water-soaked lesions on the leaves, stems, and fruit of the plant. These lesions can quickly spread and cause the plant to wilt and die. Tomato late blight is a serious disease that can cause significant damage to crops if not properly managed.",
+				});
+			router.navigate("/result");
 		} catch {
 			setVisible(true);
 		}
@@ -87,10 +100,6 @@ export default function App() {
 
 	return (
 		<>
-			<Appbar.Header>
-				<Appbar.Action icon="arrow-left" onPress={() => {}} />
-				<Appbar.Content title="Crop Disease Detection" />
-			</Appbar.Header>
 			<View style={styles.container}>
 				<Portal>
 					<Dialog visible={visible} onDismiss={hideDialog}>
