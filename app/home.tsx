@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import * as React from "react";
 import { StyleSheet } from "react-native";
 import { Appbar, FAB, PaperProvider, useTheme } from "react-native-paper";
@@ -11,10 +12,10 @@ const MyComponent = () => {
 	const theme = useTheme();
 
 	return (
-		<PaperProvider>
-			<Appbar>
+		<>
+			<Appbar.Header>
 				<Appbar.Content title="Crop Disease Detection" />
-			</Appbar>
+			</Appbar.Header>
 			<Appbar
 				style={[
 					styles.bottom,
@@ -30,19 +31,28 @@ const MyComponent = () => {
 				<FAB
 					mode="flat"
 					size="medium"
-					icon="plus"
-					onPress={() => {}}
+					icon="camera"
+					onPress={() => {
+						router.navigate("/camera");
+					}}
 					style={[
 						styles.fab,
 						{ top: (BOTTOM_APPBAR_HEIGHT - MEDIUM_FAB_HEIGHT) / 2 },
 					]}
 				/>
 			</Appbar>
-		</PaperProvider>
+		</>
 	);
 };
 
 const styles = StyleSheet.create({
+	top: {
+		backgroundColor: "#026500",
+		position: "absolute",
+		left: 0,
+		right: 0,
+		top: 0,
+	},
 	bottom: {
 		backgroundColor: "aquamarine",
 		position: "absolute",
