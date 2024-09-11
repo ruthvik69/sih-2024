@@ -1,59 +1,34 @@
-import * as React from "react";
-import { StyleSheet } from "react-native";
-import { Appbar, FAB, PaperProvider, useTheme } from "react-native-paper";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Asset } from "expo-asset";
+import { router } from "expo-router";
+import React, { useState, useEffect } from "react";
+import { View, Image, Dimensions, ImageSourcePropType } from "react-native";
 
-const BOTTOM_APPBAR_HEIGHT = 80;
-const MEDIUM_FAB_HEIGHT = 56;
+const LoadingScreen = () => {
+	const image = Asset.fromModule(
+		require("@/assets/images/loading-screen.png")
+	) as ImageSourcePropType;
+	useEffect(() => {
+		setTimeout(() => {
+			router.navigate("/home");
+		}, 2000); // navigate to HomeScreen after 2 seconds
+	}, []);
 
-const MyComponent = () => {
-	const { bottom } = useSafeAreaInsets();
-	const theme = useTheme();
+	const { width, height } = Dimensions.get("window");
 
 	return (
-		<PaperProvider>
-			<Appbar>
-				<Appbar.Content title="Crop Disease Detection" />
-			</Appbar>
-			<Appbar
-				style={[
-					styles.bottom,
-					{
-						height: BOTTOM_APPBAR_HEIGHT + bottom,
-						backgroundColor: theme.colors.elevation.level2,
-					},
-				]}
-				safeAreaInsets={{ bottom }}
-			>
-				<Appbar.Action icon="archive" onPress={() => {}} />
-
-				<FAB
-					mode="flat"
-					size="medium"
-					icon="plus"
-					onPress={() => {}}
-					style={[
-						styles.fab,
-						{ top: (BOTTOM_APPBAR_HEIGHT - MEDIUM_FAB_HEIGHT) / 2 },
-					]}
-				/>
-			</Appbar>
-		</PaperProvider>
+		<View
+			style={{
+				flex: 1,
+				justifyContent: "center",
+				alignItems: "center",
+			}}
+		>
+			<Image
+				source={image}
+				style={{ width, height, resizeMode: "cover" }}
+			/>
+		</View>
 	);
 };
 
-const styles = StyleSheet.create({
-	bottom: {
-		backgroundColor: "aquamarine",
-		position: "absolute",
-		left: 0,
-		right: 0,
-		bottom: 0,
-	},
-	fab: {
-		position: "absolute",
-		right: 16,
-	},
-});
-
-export default MyComponent;
+export default LoadingScreen;
