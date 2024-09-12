@@ -2,7 +2,7 @@ import { CameraCapturedPicture } from "expo-camera";
 import React, { createContext, useState } from "react";
 
 // Define the initial state of the results object
-interface Result {
+export interface Result {
 	label: string;
 	confidence: number;
 	image: CameraCapturedPicture | undefined;

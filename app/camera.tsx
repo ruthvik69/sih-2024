@@ -1,4 +1,4 @@
-import { useResults } from "@/contexts/results";
+import { Result, useResults } from "@/contexts/results";
 import {
 	CameraView,
 	CameraType,
@@ -13,16 +13,9 @@ import {
 	TouchableOpacity,
 	View,
 	Image,
+	Platform,
 } from "react-native";
-import {
-	Appbar,
-	Dialog,
-	IconButton,
-	MD3Colors,
-	PaperProvider,
-	Portal,
-	Text,
-} from "react-native-paper";
+import { Dialog, IconButton, Portal, Text } from "react-native-paper";
 
 let cam: CameraView | null;
 
@@ -69,27 +62,47 @@ export default function App() {
 		}
 
 		try {
-			// TODO: Uncomment the following code to enable the detection process
-			// const res = await fetch("http://localhost:8080/detect-image", {
-			// 	method: "POST",
-			// 	body: JSON.stringify({
-			// 		image: photo.base64,
-			// 	}),
-			// });
-
-			// const result = await res.json();
-			// console.log(result);
-
-			setResult &&
-				setResult({
-					label: "Tomato Late Blight",
-					confidence: 98,
-					image: photo,
-					description:
-						"Tomato late blight is a disease caused by the fungus Phytophthora infestans. It is a common disease of tomatoes and potatoes, but can also affect other members of the Solanaceae family. The disease is characterized by the appearance of dark, water-soaked lesions on the leaves, stems, and fruit of the plant. These lesions can quickly spread and cause the plant to wilt and die. Tomato late blight is a serious disease that can cause significant damage to crops if not properly managed.",
+			// TODO: After hosting the model, replace the below code to use the model for both web and mobile
+			if (Platform.OS === "web") {
+				console.log("Web");
+				const serverUrl = `http://localhost:8000/detect/`;
+				const form = new FormData();
+				form.append(
+					"image",
+					new Blob([photo.uri], { type: "image/jpeg" })
+				);
+				const res = await fetch(serverUrl, {
+					method: "POST",
+					body: form,
+					headers: {
+						"Content-Type": "multipart/form-data",
+					},
 				});
+
+				const resJson = await res.json();
+				console.log(resJson);
+
+				const result = {
+					label: resJson.label,
+					confidence: resJson.confidence,
+					image: photo,
+					description: resJson.description,
+				};
+
+				setResult && setResult(result);
+			} else {
+				setResult &&
+					setResult({
+						label: "Tomato Late Blight",
+						confidence: 98,
+						image: photo,
+						description:
+							"Tomato late blight is a disease caused by the fungus Phytophthora infestans. It is a common disease of tomatoes and potatoes, but can also affect other members of the Solanaceae family. The disease is characterized by the appearance of dark, water-soaked lesions on the leaves, stems, and fruit of the plant. These lesions can quickly spread and cause the plant to wilt and die. Tomato late blight is a serious disease that can cause significant damage to crops if not properly managed.",
+					});
+			}
 			router.navigate("/result");
-		} catch {
+		} catch (e) {
+			console.error(e);
 			setVisible(true);
 		}
 	}
