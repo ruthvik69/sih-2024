@@ -48,8 +48,15 @@ class ResNet9(nn.Module):
         return out
 
 
-model = torch.load("plant-disease-model-complete.pth",
+modelBase = torch.load("plant-disease-model-complete.pth",
                    map_location=torch.device('cpu'))
+
+torch.save(modelBase.state_dict(), "model_weights.pth")
+
+model = ResNet9(in_channels=512, num_classes=38)  # Initialize the model
+model.load_state_dict(torch.load("model_weights.pth", map_location=torch.device('cpu')))
+
+
 classes = ['Apple___Apple_scab',
            'Apple___Black_rot',
            'Apple___Cedar_apple_rust',
@@ -117,7 +124,7 @@ tokenizer.clean_up_tokenization_spaces = False
 
 # Load documents
 loader = DirectoryLoader(
-    "C:\\banana\\codeables\\Projects\\SIH\\",
+    "C:\\banana\\codeables\\Projects\\sih-2024\\backend\\",
     glob="./Plant diseases.pdf",
     loader_cls=PyPDFLoader,
     show_progress=True,
@@ -139,7 +146,7 @@ embeddings = HuggingFaceEmbeddings(
 
 # Create or load the FAISS vector store
 vectordb = FAISS.load_local(
-    folder_path="C:\\banana\\codeables\\Projects\\SIH\\vectordb",
+    folder_path="C:\\banana\\codeables\\Projects\\sih-2024\\backend\\vectordb",
     embeddings=embeddings,
     allow_dangerous_deserialization=True
 )
@@ -180,7 +187,7 @@ def stream_llm_answer(query, img=None, _print=True):
             f".An image was passed to an image model and it classified it as {classes[imageOut]} assume the classifiers acuuracy is 100%. And dont mention the classifier in your answer."
         if _print:
             print(f"predicted class:  {classes[imageOut]}")
-        results["class"] = classes[imageOut]
+        results["label"] = classes[imageOut]
     conversation_history.append(query)
     context = "\n".join(conversation_history)
     formatted_prompt = PROMPT.format(context=context, question=query)
@@ -199,11 +206,39 @@ def stream_llm_answer(query, img=None, _print=True):
     if _print:
         print()  # Newline after response is complete
     conversation_history.append(final_response)
-    results["response"] = final_response
+    results["description"] = final_response
     return results
 
 
 if __name__ == "__main__":
+    class ResNet9(nn.Module):
+        def __init__(self, in_channels, num_classes):
+            super(ResNet9, self).__init__()
+
+            self.conv1 = nn.Conv2d(in_channels, 64, kernel_size=3, padding=1)
+            self.conv2 = nn.Conv2d(64, 128, kernel_size=3, stride=2, padding=1)
+            self.res1 = nn.Sequential(nn.Conv2d(128, 128, kernel_size=3, padding=1), nn.ReLU(
+            ), nn.Conv2d(128, 128, kernel_size=3, padding=1))
+
+            self.conv3 = nn.Conv2d(128, 256, kernel_size=3, stride=2, padding=1)
+            self.conv4 = nn.Conv2d(256, 512, kernel_size=3, stride=2, padding=1)
+            self.res2 = nn.Sequential(nn.Conv2d(512, 512, kernel_size=3, padding=1), nn.ReLU(
+            ), nn.Conv2d(512, 512, kernel_size=3, padding=1))
+
+            self.classifier = nn.Sequential(nn.MaxPool2d(
+                4), nn.Flatten(), nn.Linear(512, num_classes))
+
+        def forward(self, xb):
+            out = F.relu(self.conv1(xb))
+            out = F.relu(self.conv2(out))
+            out = self.res1(out) + out
+            out = F.relu(self.conv3(out))
+            out = F.relu(self.conv4(out))
+            out = self.res2(out) + out
+            out = self.classifier(out)
+            return out
+
+
     # Main loop to query and stream responses
     while True:
         inp = input("User: ")
