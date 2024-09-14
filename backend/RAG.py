@@ -48,14 +48,16 @@ class ResNet9(nn.Module):
         return out
 
 
-modelBase = torch.load("plant-disease-model-complete.pth",
+# modelBase = torch.load("plant-disease-model-complete.pth",
+#                    map_location=torch.device('cpu'))
+
+# torch.save(modelBase.state_dict(), "model_weights.pth")
+
+# model = ResNet9(in_channels=512, num_classes=38)  # Initialize the model
+# model.load_state_dict(torch.load("model_weights.pth", map_location=torch.device('cpu')))
+
+model = torch.load("plant-disease-model-complete.pth",
                    map_location=torch.device('cpu'))
-
-torch.save(modelBase.state_dict(), "model_weights.pth")
-
-model = ResNet9(in_channels=512, num_classes=38)  # Initialize the model
-model.load_state_dict(torch.load("model_weights.pth", map_location=torch.device('cpu')))
-
 
 classes = ['Apple___Apple_scab',
            'Apple___Black_rot',
